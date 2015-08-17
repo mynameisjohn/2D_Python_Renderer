@@ -3,8 +3,10 @@
 #include <array>
 #include <gtx/transform.hpp>
 
+// Static handle to position attribute
 GLint GeomFactory::s_PosHandle = -1;
 
+// Factory modifiers
 void GeomFactory::setTrans(float tx, float ty, float tz) {
 	m_Trans = vec3(tx, ty, tz);
 }
@@ -18,6 +20,7 @@ void GeomFactory::setColor(float r, float g, float b, float a) {
 	m_Color = vec4(r, g, b, a);
 }
 
+// Default constructor, makes state as blank as possible
 GeomFactory::GeomFactory() :
 	m_Trans(0),
 	m_Scale(1),
@@ -25,97 +28,60 @@ GeomFactory::GeomFactory() :
 	m_Color(1)
 {}
 
+// This doesn't need much
 QuadFactory::QuadFactory() :
 	GeomFactory()
 {}
 
+// QuadFactory's getGeom function
+// which really only gets called once
 GeomFactory::Info QuadFactory::getGeom() {
-	std::array<vec3, 4> vertices = {
-		vec3(0,0,0),
-		vec3(1,0,0),
+	// This is a cheap trick....
+	// I need the index count, but I'd rather
+	// figure something else out
+	// Vertices, centered around origin
+	const std::array<vec3, 4> vertices = {
+		vec3(-1,-1,0),
+		vec3(1,-1,0),
 		vec3(1,1,0),
-		vec3(0,1,0)
+		vec3(-1,1,0)
 	};
-	std::array<uint32_t, 4> indices = {
+
+	// Indices
+	// right now these only work for triangle fan
+	const std::array<uint32_t, 4> indices = {
 		0,1,2,3
 	};
 
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	// For quads just make the VAO once
+	GLuint VAO(0);
+	if (m_CachedVAOs.size())
+		VAO = m_CachedVAOs.begin()->second;
 
-	std::array<GLuint, 2> buffers;
-	glGenBuffers(buffers.size(), buffers.data());
+	// If the VAO doesn't exist, create it	
+	else {
+		// Generate bufferse for vertices and indices
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+		std::array<GLuint, 2> buffers;
+		glGenBuffers(buffers.size(), buffers.data());
 
-	//vertices
-	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*vertices.size(), vertices.data(), GL_STATIC_DRAW);
-	glEnableVertexAttribArray(s_PosHandle);
-	glVertexAttribPointer(s_PosHandle, 3, GL_FLOAT, 0, 0, 0);
+		//vertices
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*vertices.size(), vertices.data(), GL_STATIC_DRAW);
+		glEnableVertexAttribArray(s_PosHandle);
+		glVertexAttribPointer(s_PosHandle, 3, GL_FLOAT, 0, 0, 0);
 
-	//indices
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t)*indices.size(), indices.data(), GL_STATIC_DRAW);
+		//indices
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t)*indices.size(), indices.data(), GL_STATIC_DRAW);
 
-	glBindVertexArray(0);
+		glBindVertexArray(0);
+	}
 
+	// Create MV given current state
 	mat4 MV = glm::translate(m_Trans)*glm::rotate(m_Rot.w, vec3(m_Rot))*glm::scale(m_Scale);
-
+	
+	// return info given current state
 	return { VAO, indices.size(), m_Color, MV };
 }
-
-//
-////Create a Vertex Array Object given some geometry info
-//template <uint32_t nVert, uint32_t nIdx>
-///*static*/ GLuint GeomFactory::genVAO(std::array<vec3, nVert> verts, std::array<uint32_t, nIdx> indices, GLint posHandle) {
-//
-//	GLuint VAO;
-//	glGenVertexArrays(1, &VAO);
-//	glBindVertexArray(VAO);
-//
-//	std::array<GLuint, 2> buffers;
-//	glGenBuffers(buffers.size(), buffers.data());
-//
-//	//vertices
-//	glBindBuffer(GL_ARRAY_BUFFER, buffers[0]);
-//	glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*verts.size(), verts.data(), GL_STATIC_DRAW);
-//	glEnableVertexAttribArray(posHandle);
-//	glVertexAttribPointer(posHandle, 3, GL_FLOAT, 0, 0, 0);
-//
-//	//indices
-//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers[1]);
-//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t)*indices.size(), indices.data(), GL_STATIC_DRAW);
-//
-//	glBindVertexArray(0);
-//
-//	return VAO;
-//}
-//
-//GLuint GeomFactory::GetQuad(GLint posHandle) {
-//	if (posHandle < 0)
-//		return 0;
-//
-//	auto it = m_mapCachedGeometry.find("quad");
-//	if (it != m_mapCachedGeometry.end())
-//		return it->second;
-//
-//	std::array<vec3, 4> vertices = {
-//		vec3(0,0,0),
-//		vec3(1,0,0),
-//		vec3(1,1,0),
-//		vec3(0,1,0)
-//	};
-//	std::array<uint32_t, 4> indices = {
-//		0,1,2,3
-//	};
-//
-//	uint32_t VAO = genVAO(vertices, indices, posHandle);
-//
-//	m_mapCachedGeometry["quad"] = VAO;
-//
-//	return VAO;
-//}
-//
-//GeomFactory::GeomFactory() {
-//
-//}
