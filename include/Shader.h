@@ -13,16 +13,28 @@ class Shader;
 using ShaderPtr = std::shared_ptr < Shader >;
 
 class Shader {
-	// Private initializer
-	int CompileAndLink();
-
+	// Can you expose enums? Only if python does
+	// the same ordering i.e 0,1,2...
+	enum Type {
+		VERT,
+		FRAG
+	};
 	// Private constructor to limit how these can be created (see static methods below)
 	Shader();
 public:
+	// Initializer
+	int CompileAndLink();
+
 	static ShaderPtr FromSource(std::string v, std::string f);
 	static ShaderPtr FromFile(std::string v, std::string f);
 
 	~Shader();
+
+	// For the python scripting stuff, it helps to let
+	// other people change the source. However this has
+	// to blow out any previous shader info, so be careful
+	void SetSource(std::string source, Type t); // TODO should these
+	void SetSourceFile(std::string fileName, Type t); // compile/link?
 
 	// Bound status
 	bool Bind();
@@ -31,10 +43,8 @@ public:
 
 	// Logging functions
 	bool PrintError() const;
-	int PrintLog_V() const;
-	int PrintLog_F() const;
-	int PrintSrc_V() const;
-	int PrintSrc_F() const;
+	int PrintLog(Type t) const;
+	int PrintSrc(Type t) const;
 
 	// Public Accessors
 	GLint getHandle(const std::string idx);
@@ -47,7 +57,8 @@ private:
 	GLuint m_Program;
 	GLuint m_hVertShader;
 	GLuint m_hFragShader;
-	std::string m_VertShaderSrc, m_FragShaderSrc;
+	std::string m_VertShaderSrc;
+	std::string m_FragShaderSrc;
 	HandleMap m_Handles;
 
 	// Public scoped bind class

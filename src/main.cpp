@@ -177,22 +177,24 @@ bool Init() {
 	if (!(InitGL() && InitPython()))
 		return false;
 
-	return InitGeom();
+	return InitScene();
 }
 
 void Draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// Get projection matrix
 	mat4 P = g_Camera.GetMat();
 
+	// Bind shader
 	auto sb = g_ShaderPtr->ScopeBind();
 	for (const auto& G : g_GeomCollection) {
-		// get PMV matrix and upload
-		mat4 PMV = P * G.m_MV;
+		// calculate PMV matrix and upload
+		mat4 PMV = P * G.MV;
 		glUniformMatrix4fv(g_ShaderPtr->getHandle("u_PMV"), 1, GL_FALSE, (const GLfloat *)&PMV);
 
 		// Upload color
-		glUniform4f(g_ShaderPtr->getHandle("u_Color"), G.m_Color[0], G.m_Color[1], G.m_Color[2], G.m_Color[3]);
+		glUniform4f(g_ShaderPtr->getHandle("u_Color"), G.color[0], G.color[1], G.color[2], G.color[3]);
 
 		// Bind VAO, draw
 		glBindVertexArray(G.VAO);
