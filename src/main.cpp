@@ -13,6 +13,7 @@
 #include "Shader.h"
 #include "GeomFactory.h"
 #include "GeomCollection.h"
+#include "Camera.h"
 
 #include <gtx/transform.hpp>
 
@@ -22,16 +23,25 @@
 #include <pywrapper.h>
 #include <EcsPython.h>
 
+// Screen dims
 const int WIDTH = 600;
 const int HEIGHT = 600;
+
+// GL version
 const int glMajor(3), glMinor(0);
 
+// OpenGL context and main window
 SDL_GLContext g_Context;
 SDL_Window * g_Window = nullptr;
 
+// Pointer to the shader struct (does it need to be a pointer?)
 ShaderPtr g_ShaderPtr = nullptr;
 
+// Global geometry collection
 GeomCollection g_GeomCollection;
+
+// Global Camera (you should move this somewhere)
+Camera g_Camera;
 
 // initGL
 // Sets up OpenGL context, if possible
@@ -104,15 +114,21 @@ bool InitGL() {
 	return true;
 }
 
+// Python registration stuff, it's a work in progress
+// Expose the geometry factory and its modifier methods
 ECS_REGISTER_CLASS(GeomFactory)
 ECS_REGISTER_METHOD_VOID(GeomFactory, setTrans, float, float, float)
 ECS_REGISTER_METHOD_VOID(GeomFactory, setScale, float, float, float)
 ECS_REGISTER_METHOD_VOID(GeomFactory, setRot, float, float, float, float)
 ECS_REGISTER_METHOD_VOID(GeomFactory, setColor, float, float, float, float)
 
+// Expose the Geom collection and it's add method
 ECS_REGISTER_CLASS(GeomCollection)
 ECS_REGISTER_METHOD_VOID(GeomCollection, AddGeom, void *)
 
+// This doesn't need to be global, but what happens when
+// it goes out of scope? Will python know?
+// You may need a custom deleter...
 std::unique_ptr<GeomFactory> gFact(new QuadFactory());
 
 // initPython
@@ -135,27 +151,54 @@ bool InitPython() {
 	return true;
 }
 
-// init
+// InitScene
+// Initialize geometry using preexisting python script
+// as well as camera and other stuff
+bool InitScene(){
+	// bind shader
+	auto sBind = g_ShaderPtr->ScopeBind();
+
+	// Set up position handle (needed for VAO creation)
+	GeomFactory::setPosHandle(g_ShaderPtr->getHandle("a_Pos"));
+
+	// Run geometry creation script
+	Ecs_Python_File("../Scripts/init.py");
+
+	// Just make an ortho camera for now
+	g_Camera = Camera(vec2(-1,1), vec2(-1,1), vec2(-1,1));
+
+	// Do some python error checking!
+	return true;
+}
+
+// Init
 // init everything
 bool Init() {
 	if (!(InitGL() && InitPython()))
 		return false;
 
-	auto sBind = g_ShaderPtr->ScopeBind();
-	GeomFactory::setPosHandle(g_ShaderPtr->getHandle("a_Pos"));
-	Ecs_Python_File("../Scripts/init.py");
+	return InitGeom();
 }
 
 void Draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	mat4 P = g_Camera.GetMat();
+
 	auto sb = g_ShaderPtr->ScopeBind();
 	for (const auto& G : g_GeomCollection) {
-		// Bind VAO, draw
-		glUniformMatrix4fv(g_ShaderPtr->getHandle("u_PMV"), 1, GL_FALSE, (const GLfloat *)&G.m_MV);
+		// get PMV matrix and upload
+		mat4 PMV = P * G.m_MV;
+		glUniformMatrix4fv(g_ShaderPtr->getHandle("u_PMV"), 1, GL_FALSE, (const GLfloat *)&PMV);
+
+		// Upload color
 		glUniform4f(g_ShaderPtr->getHandle("u_Color"), G.m_Color[0], G.m_Color[1], G.m_Color[2], G.m_Color[3]);
+
+		// Bind VAO, draw
 		glBindVertexArray(G.VAO);
 		glDrawElements(GL_TRIANGLE_FAN, G.nIdx, GL_UNSIGNED_INT, NULL);
 	}
+
 	SDL_GL_SwapWindow(g_Window);
 }
 
