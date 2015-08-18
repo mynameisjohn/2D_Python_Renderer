@@ -22,6 +22,7 @@
 
 #include <pywrapper.h>
 #include <EcsPython.h>
+#define ECS_EXPOSE(Var) Ecs_Expose_Object(&Var, xstr(Var))
 
 // Screen dims
 const int WIDTH = 600;
@@ -35,7 +36,12 @@ SDL_GLContext g_Context;
 SDL_Window * g_Window = nullptr;
 
 // Pointer to the shader struct (does it need to be a pointer?)
-ShaderPtr g_ShaderPtr = nullptr;
+Shader g_Shader;
+
+// This doesn't need to be global, but what happens when
+// it goes out of scope? Will python know?
+// You may need a custom deleter...
+std::unique_ptr<GeomFactory> g_GeomFactory(new QuadFactory());
 
 // Global geometry collection
 GeomCollection g_GeomCollection;
@@ -107,9 +113,9 @@ bool InitGL() {
 	glLineWidth(8.f);
 
 	// Shader creation
-	g_ShaderPtr = Shader::FromFile("../Shaders/simple.vert", "../Shaders/simple.frag");
-	if (g_ShaderPtr == nullptr)
-		return false;
+	//g_ShaderPtr = Shader::FromFile("../Shaders/simple.vert", "../Shaders/simple.frag");
+	//if (g_ShaderPtr == nullptr)
+	//	return false;
 
 	return true;
 }
@@ -126,13 +132,20 @@ ECS_REGISTER_METHOD_VOID(GeomFactory, setColor, float, float, float, float)
 ECS_REGISTER_CLASS(GeomCollection)
 ECS_REGISTER_METHOD_VOID(GeomCollection, AddGeom, void *)
 
-// This doesn't need to be global, but what happens when
-// it goes out of scope? Will python know?
-// You may need a custom deleter...
-std::unique_ptr<GeomFactory> gFact(new QuadFactory());
+ECS_REGISTER_CLASS(Shader)
+ECS_REGISTER_METHOD_VOID(Shader, SetSource_V, std::string)
+ECS_REGISTER_METHOD_VOID(Shader, SetSourceFile_V, std::string)
+ECS_REGISTER_METHOD_VOID(Shader, SetSource_F, std::string)
+ECS_REGISTER_METHOD_VOID(Shader, SetSourceFile_F, std::string)
+ECS_REGISTER_METHOD_RETURN(Shader, CompileAndLink, int)
+
+// I can't expose constructors, I'd need
+// a factory (and fuck that)
+ECS_REGISTER_CLASS(Camera)
+ECS_REGISTER_METHOD_VOID(Camera, Init, float, float, float, float , float, float)
 
 // initPython
-// Sets up python interpreter (NYI)
+// Sets up python interpreter (work in progress)
 bool InitPython() {
 	Ecs_Init_GeomFactory();
 	Ecs_Init_GeomFactory_setTrans();
@@ -143,10 +156,22 @@ bool InitPython() {
 	Ecs_Init_GeomCollection();
 	Ecs_Init_GeomCollection_AddGeom();
 
+	Ecs_Init_Shader();
+	Ecs_Init_Shader_SetSource_V();
+	Ecs_Init_Shader_SetSourceFile_V();
+	Ecs_Init_Shader_SetSource_F();
+	Ecs_Init_Shader_SetSourceFile_F();
+	Ecs_Init_Shader_CompileAndLink();
+
+	Ecs_Init_Camera();
+	Ecs_Init_Camera_Init();
+
 	Ecs_Initialize();
 
-	Ecs_Expose_Object(gFact.get(), "geomFactory");
-	Ecs_Expose_Object(&g_GeomCollection, "geomCollection");
+	ECS_EXPOSE(g_GeomCollection);
+	ECS_EXPOSE(g_Shader);
+	ECS_EXPOSE(g_Camera);
+	Ecs_Expose_Object(g_GeomFactory.get(), xstr(g_GeomFactory)); // unfortunate
 
 	return true;
 }
@@ -155,17 +180,23 @@ bool InitPython() {
 // Initialize geometry using preexisting python script
 // as well as camera and other stuff
 bool InitScene(){
-	// bind shader
-	auto sBind = g_ShaderPtr->ScopeBind();
+
 
 	// Set up position handle (needed for VAO creation)
-	GeomFactory::setPosHandle(g_ShaderPtr->getHandle("a_Pos"));
+	
 
-	// Run geometry creation script
+	// run script, call functions
 	Ecs_Python_File("../Scripts/init.py");
+	Ecs_Python_Cmd("initShader()");
 
-	// Just make an ortho camera for now
-	g_Camera = Camera(vec2(-1,1), vec2(-1,1), vec2(-1,1));
+	// bind shader
+	auto sBind = g_Shader.ScopeBind();
+	GeomFactory::setPosHandle(g_Shader.getHandle("a_Pos"));
+	Ecs_Python_Cmd("initGeom()");
+
+	// Makes an ortho camera
+	
+	Ecs_Python_Cmd("initCamera()");
 
 	// Do some python error checking!
 	return true;
@@ -187,14 +218,14 @@ void Draw() {
 	mat4 P = g_Camera.GetMat();
 
 	// Bind shader
-	auto sb = g_ShaderPtr->ScopeBind();
+	auto sb = g_Shader.ScopeBind();
 	for (const auto& G : g_GeomCollection) {
 		// calculate PMV matrix and upload
 		mat4 PMV = P * G.MV;
-		glUniformMatrix4fv(g_ShaderPtr->getHandle("u_PMV"), 1, GL_FALSE, (const GLfloat *)&PMV);
+		glUniformMatrix4fv(g_Shader.getHandle("u_PMV"), 1, GL_FALSE, (const GLfloat *)&PMV);
 
 		// Upload color
-		glUniform4f(g_ShaderPtr->getHandle("u_Color"), G.color[0], G.color[1], G.color[2], G.color[3]);
+		glUniform4f(g_Shader.getHandle("u_Color"), G.color[0], G.color[1], G.color[2], G.color[3]);
 
 		// Bind VAO, draw
 		glBindVertexArray(G.VAO);

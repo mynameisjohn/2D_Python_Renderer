@@ -26,8 +26,10 @@ public:
 
 	// Constructors (default, ortho, persp)
 	Camera();
-	Camera(const vec2 X, const vec2 Y, const vec2 Z);
-	Camera(const float fovy, const float aspect, const vec2 nf);
+	//Camera(const vec2 X, const vec2 Y, const vec2 Z); // python amirite?
+	//Camera(const float fovy, const float aspect, const vec2 nf);
+	void Init(float left, float right, float bottom, float top, float near, float far);
+	//void Init(float fovy, float aspect, float near, float far);
 
 	// Functions to modify projection transform
 	void ResetRot();

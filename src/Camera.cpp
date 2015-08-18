@@ -14,20 +14,27 @@ Camera::Camera() :
 }
 
 // Ortho constructor
-Camera::Camera(const vec2 X, const vec2 Y, const vec2 Z) :
-	m_Type(Type::ORTHO),
-	m_v3Pos(0),
-	m_qRot(1, 0, 0, 0),
-	m_m4Proj(glm::ortho(X[0], X[1], Y[0], Y[1], Z[0], Z[1])) {
+//Camera::Camera(const vec2 X, const vec2 Y, const vec2 Z) :
+//	m_Type(Type::ORTHO),
+//	m_v3Pos(0),
+//	m_qRot(1, 0, 0, 0),
+//	m_m4Proj(glm::ortho(X[0], X[1], Y[0], Y[1], Z[0], Z[1])) {
+//}
+
+void Camera::Init(float left, float right, float bottom, float top, float near, float far) {
+	m_Type = Type::ORTHO;
+	m_v3Pos = vec3(0);
+	m_qRot = fquat(1, 0, 0, 0);
+	m_m4Proj = glm::ortho(left, right, bottom, top, near, far);
 }
 
 // Perspective constructor
-Camera::Camera(const float fovy, const float aspect, const vec2 nf) :
-	m_Type(Type::PERSP),
-	m_v3Pos(0, 0, 0),
-	m_qRot(1, 0, 0, 0),
-	m_m4Proj(glm::perspective(fovy, aspect, nf[0], nf[1])) {
-}
+//Camera::Camera(const float fovy, const float aspect, const vec2 nf) :
+//	m_Type(Type::PERSP),
+//	m_v3Pos(0, 0, 0),
+//	m_qRot(1, 0, 0, 0),
+//	m_m4Proj(glm::perspective(fovy, aspect, nf[0], nf[1])) {
+//}
 
 vec3 Camera::GetPos() const {
 	return m_v3Pos;

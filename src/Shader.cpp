@@ -16,37 +16,6 @@ Shader::~Shader() {
 	Unbind();
 }
 
-// These static "factory" methods construct a smart pointer to a shader
-// object, because I'd prefer to have one of these active at a time
-// (although does it really matter, as long as one Shader runs CompileAndLink()?)
-/*static*/ ShaderPtr Shader::FromSource(string v, string f) {
-	if (v.empty() || f.empty())
-		return nullptr;
-
-	ShaderPtr ret(new Shader);
-
-	ret->m_VertShaderSrc = v;
-	ret->m_FragShaderSrc = f;
-	int err = ret->CompileAndLink();
-
-	// Exit on this, just because
-	if (err)
-		exit(err);
-
-	return ret;
-}
-
-/*static*/ ShaderPtr Shader::FromFile(string v, string f) {
-	if (v.empty() || f.empty())
-		return nullptr;
-
-	ifstream vIn(v), fIn(f);
-	string vSrc((istreambuf_iterator<char>(vIn)), istreambuf_iterator<char>());
-	string fSrc((istreambuf_iterator<char>(fIn)), istreambuf_iterator<char>());
-
-	return FromSource(vSrc, fSrc);
-}
-
 // Managing bound state
 bool Shader::Bind() {
 	if (!m_bIsBound) {
@@ -80,7 +49,7 @@ int Shader::CompileAndLink() {
 	};
 
 	// Error codes to return
-	const int ERR_N(0), ERR_V(1), ERR_F(2), ERR_L(4);
+	const int ERR_N(0), ERR_V(1), ERR_F(2), ERR_L(3);
 
 	// Weird thing that helps with glShaderSource
 	const GLchar * shaderSrc[] = { m_VertShaderSrc.c_str(), m_FragShaderSrc.c_str() };
@@ -91,7 +60,7 @@ int Shader::CompileAndLink() {
 	glCompileShader(m_hVertShader);
 	if (!check(m_hVertShader, GL_COMPILE_STATUS)) {
 		cout << "Unable to compile vertex shader." << endl;
-		PrintLog(Shader::Type::VERT);
+		PrintLog_V();
 		return ERR_V;
 	}
 
@@ -101,7 +70,7 @@ int Shader::CompileAndLink() {
 	glCompileShader(m_hFragShader);
 	if (!check(m_hFragShader, GL_COMPILE_STATUS)) {
 		cout << "Unable to compile fragment shader." << endl;
-		PrintLog(Shader::Type::FRAG);
+		PrintLog_F();
 		return ERR_F;
 	}
 
@@ -142,43 +111,71 @@ GLint Shader::getHandle(const string idx) {
 	else {
 		// We queried something bad, print the log
 		cout << "Invalid variable " << idx << " queried in shader" << endl;
-		PrintLog(Shader::Type::VERT);
-		PrintLog(Shader::Type::FRAG);
+		PrintLog_V();
+		PrintLog_F();
 	}
 
 	return handle;
 }
 
 // Print Logs
-int Shader::PrintLog(Shader::Type t) const {
+int Shader::PrintLog_V() const {
 	const int max(1024);
 	int len(0);
 	char log[max];
-	glGetShaderInfoLog(t == Shader::Type::VERT ? m_hVertShader : m_hFragShader, max, &len, log);
+	glGetShaderInfoLog(m_hVertShader, max, &len, log);
 	cout << "Vertex Shader Log: \n\n" << log << "\n\n" << endl;
 
 	return len;
 }
+int Shader::PrintLog_F() const {
+	const int max(1024);
+	int len(0);
+	char log[max];
+	glGetShaderInfoLog(m_hFragShader, max, &len, log);
+	cout << "Fragment Shader Log: \n\n" << log << "\n\n" << endl;
 
-int Shader::PrintSrc(Shader::Type t) const {
-	cout << "Fragment Shader Source: \n\n" << (t == Shader::Type::VERT ? m_VertShaderSrc : m_FragShaderSrc) << "\n\n" << endl;
+	return len;
+}
+
+int Shader::PrintSrc_V() const {
+	cout << "Vertex Shader Source: \n\n" << m_VertShaderSrc << "\n\n" << endl;
+	return m_VertShaderSrc.length();
+}
+
+int Shader::PrintSrc_F() const {
+	cout << "Fragment Shader Source: \n\n" << m_FragShaderSrc << "\n\n" << endl;
 	return m_FragShaderSrc.length();
 }
 
-void Shader::SetSource(std::string source, Shader::Type t) {
+void Shader::SetSource_V(std::string source) {
 	if (source.empty()){
-		cout << "Error: empty source passed in to shader" << endl;
+		cout << "Error: empty source passed in to vert shader" << endl;
 		return;
 	}
 
-	if ( t == Shader::Type::VERT )
-		m_VertShaderSrc = source;
-	else if ( t == Shader::Type::FRAG )
-		m_FragShaderSrc = source;
+	m_VertShaderSrc = source;
+
 	m_Program = 0;
 }
 
-void Shader::SetSourceFile(std::string file, Shader::Type t) {
+void Shader::SetSource_F(std::string source) {
+	if (source.empty()) {
+		cout << "Error: empty source passed in to frag shader" << endl;
+		return;
+	}
+
+	m_FragShaderSrc = source;
+
+	m_Program = 0;
+}
+
+void Shader::SetSourceFile_V(std::string file) {
 	ifstream in(file);
-	SetSource( std::string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>()), t);
+	SetSource_V( std::string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>()));
+}
+
+void Shader::SetSourceFile_F(std::string file) {
+	ifstream in(file);
+	SetSource_F(std::string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>()));
 }

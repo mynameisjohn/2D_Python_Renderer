@@ -10,31 +10,22 @@
 using HandleMap = std::map < std::string, GLint >;
 
 class Shader;
-using ShaderPtr = std::shared_ptr < Shader >;
 
 class Shader {
-	// Can you expose enums? Only if python does
-	// the same ordering i.e 0,1,2...
-	enum Type {
-		VERT,
-		FRAG
-	};
-	// Private constructor to limit how these can be created (see static methods below)
-	Shader();
 public:
+	Shader();
 	// Initializer
 	int CompileAndLink();
-
-	static ShaderPtr FromSource(std::string v, std::string f);
-	static ShaderPtr FromFile(std::string v, std::string f);
 
 	~Shader();
 
 	// For the python scripting stuff, it helps to let
 	// other people change the source. However this has
 	// to blow out any previous shader info, so be careful
-	void SetSource(std::string source, Type t); // TODO should these
-	void SetSourceFile(std::string fileName, Type t); // compile/link?
+	void SetSource_V(std::string source); // TODO should these
+	void SetSourceFile_V(std::string fileName); // compile/link?
+	void SetSource_F(std::string source); 
+	void SetSourceFile_F(std::string fileName); 
 
 	// Bound status
 	bool Bind();
@@ -42,9 +33,10 @@ public:
 	bool IsBound() const;
 
 	// Logging functions
-	bool PrintError() const;
-	int PrintLog(Type t) const;
-	int PrintSrc(Type t) const;
+	int PrintLog_V() const;
+	int PrintSrc_V() const;
+	int PrintLog_F() const;
+	int PrintSrc_F() const;
 
 	// Public Accessors
 	GLint getHandle(const std::string idx);

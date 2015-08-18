@@ -8,6 +8,10 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+// Stringify macros
+#define xstr(s) str(s)
+#define str(s) #s
+
 // glm is important to me
 #include <fwd.hpp>
 using glm::vec2;
