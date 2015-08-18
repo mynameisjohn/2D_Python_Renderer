@@ -14,10 +14,10 @@ class Shader;
 class Shader {
 public:
 	Shader();
+	~Shader();
+
 	// Initializer
 	int CompileAndLink();
-
-	~Shader();
 
 	// For the python scripting stuff, it helps to let
 	// other people change the source. However this has

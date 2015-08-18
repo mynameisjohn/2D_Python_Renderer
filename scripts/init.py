@@ -19,12 +19,13 @@ def createGeom(pos, scale, color):
     g_GeomCollection.AddGeom(g_GeomFactory())
 
 def initGeom():
-    createGeom(pos = [-1.,-1.,0.], scale = [1.,1.,0.], color = [0.,1.,0.,1.])
-    createGeom(pos = [1.,-1.,0.], scale = [1.,0.5,0.], color = [1.,1.,0.,1.])
+    createGeom(pos = [-5.,-1.,0.], scale = [1.,6.,0.], color = [0.,1.,0.,1.])
+    createGeom(pos = [4.,3.,0.], scale = [3.,0.5,0.], color = [1.,0.,0.,1.])
+    createGeom(pos = [0.,7.,0.], scale = [3.,0.5,0.], color = [0.,0.,1.,1.])
 
 # you could just expose some InitOrtho, but I guess this is clearer? maybe?
 def createOrthoCamera(left, right, bottom, top, near, far):
     g_Camera.Init(left, right, bottom, top, near, far)
 
 def initCamera():
-    createOrthoCamera(left=-1., right=1., bottom=-1., top=1., near=1., far=-1.)
+    createOrthoCamera(left=-10., right=10., bottom=-10., top=10., near=10., far=-10.)

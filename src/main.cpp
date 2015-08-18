@@ -95,7 +95,7 @@ bool InitGL() {
 	}
 
 	//OpenGL settings
-	glClearColor(1.f, .4f, .4f, 1.f);
+	glClearColor(0.15f, 0.15f, 0.15f, 1.f);
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
@@ -111,11 +111,6 @@ bool InitGL() {
 
 	//For debugging
 	glLineWidth(8.f);
-
-	// Shader creation
-	//g_ShaderPtr = Shader::FromFile("../Shaders/simple.vert", "../Shaders/simple.frag");
-	//if (g_ShaderPtr == nullptr)
-	//	return false;
 
 	return true;
 }
@@ -180,22 +175,18 @@ bool InitPython() {
 // Initialize geometry using preexisting python script
 // as well as camera and other stuff
 bool InitScene(){
-
-
-	// Set up position handle (needed for VAO creation)
-	
-
-	// run script, call functions
+	// run script to generate init functions
 	Ecs_Python_File("../Scripts/init.py");
+
+	// Init shader
 	Ecs_Python_Cmd("initShader()");
 
-	// bind shader
+	// bind shader, get position handle, init geom
 	auto sBind = g_Shader.ScopeBind();
 	GeomFactory::setPosHandle(g_Shader.getHandle("a_Pos"));
 	Ecs_Python_Cmd("initGeom()");
 
 	// Makes an ortho camera
-	
 	Ecs_Python_Cmd("initCamera()");
 
 	// Do some python error checking!
