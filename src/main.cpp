@@ -11,8 +11,9 @@
 #include "GL_Includes.h"
 #include "Util.h"
 #include "Shader.h"
-#include "GeomFactory.h"
-#include "GeomCollection.h"
+//#include "GeomFactory.h"
+//#include "GeomCollection.h"
+#include "GraphicsComponent.h"
 #include "Camera.h"
 
 #include <gtx/transform.hpp>
@@ -38,13 +39,17 @@ SDL_Window * g_Window = nullptr;
 // Pointer to the shader struct (does it need to be a pointer?)
 Shader g_Shader;
 
+// Factory and Collection externs
+G_Component::FactoryPtr GraphicsFactory::s_Instance;
+G_Component::CollectionPtr GraphicsCollection::s_Instance;
+
 // This doesn't need to be global, but what happens when
 // it goes out of scope? Will python know?
 // You may need a custom deleter...
-std::unique_ptr<GeomFactory> g_GeomFactory(new QuadFactory());
-
-// Global geometry collection
-GeomCollection g_GeomCollection;
+//std::unique_ptr<GeomFactory> g_GeomFactory(new QuadFactory());
+//
+//// Global geometry collection
+//GeomCollection g_GeomCollection;
 
 // Global Camera (you should move this somewhere)
 Camera g_Camera;
@@ -117,15 +122,15 @@ bool InitGL() {
 
 // Python registration stuff, it's a work in progress
 // Expose the geometry factory and its modifier methods
-ECS_REGISTER_CLASS(GeomFactory)
-ECS_REGISTER_METHOD_VOID(GeomFactory, setTrans, float, float, float)
-ECS_REGISTER_METHOD_VOID(GeomFactory, setScale, float, float, float)
-ECS_REGISTER_METHOD_VOID(GeomFactory, setRot, float, float, float, float)
-ECS_REGISTER_METHOD_VOID(GeomFactory, setColor, float, float, float, float)
+ECS_REGISTER_CLASS(GraphicsFactory)
+ECS_REGISTER_METHOD_VOID(GraphicsFactory, setTrans, float, float, float)
+ECS_REGISTER_METHOD_VOID(GraphicsFactory, setScale, float, float, float)
+ECS_REGISTER_METHOD_VOID(GraphicsFactory, setRot, float, float, float, float)
+ECS_REGISTER_METHOD_VOID(GraphicsFactory, setColor, float, float, float, float)
 
 // Expose the Geom collection and it's add method
-ECS_REGISTER_CLASS(GeomCollection)
-ECS_REGISTER_METHOD_VOID(GeomCollection, AddGeom, void *)
+ECS_REGISTER_CLASS(GraphicsCollection)
+ECS_REGISTER_METHOD_VOID(GraphicsCollection, addComponent, void *)
 
 ECS_REGISTER_CLASS(Shader)
 ECS_REGISTER_METHOD_VOID(Shader, SetSource_V, std::string)
@@ -142,14 +147,14 @@ ECS_REGISTER_METHOD_VOID(Camera, Init, float, float, float, float , float, float
 // initPython
 // Sets up python interpreter (work in progress)
 bool InitPython() {
-	Ecs_Init_GeomFactory();
-	Ecs_Init_GeomFactory_setTrans();
-	Ecs_Init_GeomFactory_setScale();
-	Ecs_Init_GeomFactory_setRot();
-	Ecs_Init_GeomFactory_setColor();
+	Ecs_Init_GraphicsFactory();
+	Ecs_Init_GraphicsFactory_setTrans();
+	Ecs_Init_GraphicsFactory_setScale();
+	Ecs_Init_GraphicsFactory_setRot();
+	Ecs_Init_GraphicsFactory_setColor();
 
-	Ecs_Init_GeomCollection();
-	Ecs_Init_GeomCollection_AddGeom();
+	Ecs_Init_GraphicsCollection();
+	Ecs_Init_GraphicsCollection_addComponent();
 
 	Ecs_Init_Shader();
 	Ecs_Init_Shader_SetSource_V();
@@ -163,10 +168,10 @@ bool InitPython() {
 
 	Ecs_Initialize();
 
-	ECS_EXPOSE(g_GeomCollection);
+	Ecs_Expose_Object(GraphicsFactory::Instance(), "g_GraphicsFactory");
 	ECS_EXPOSE(g_Shader);
 	ECS_EXPOSE(g_Camera);
-	Ecs_Expose_Object(g_GeomFactory.get(), xstr(g_GeomFactory)); // unfortunate
+	Ecs_Expose_Object(&GraphicsCollection::Instance(), "g_GraphicsCollection"); // unfortunate
 
 	return true;
 }
@@ -181,13 +186,16 @@ bool InitScene(){
 	// Init shader
 	Ecs_Python_Cmd("initShader()");
 
-	// bind shader, get position handle, init geom
-	auto sBind = g_Shader.ScopeBind();
-	GeomFactory::setPosHandle(g_Shader.getHandle("a_Pos"));
-	Ecs_Python_Cmd("initGeom()");
-
 	// Makes an ortho camera
 	Ecs_Python_Cmd("initCamera()");
+
+	GraphicsFactory::Init();
+	GraphicsCollection::Init();
+
+	// bind shader, get position handle, init geom
+	auto sBind = g_Shader.ScopeBind();
+	GraphicsFactory::setPosHandle(g_Shader.getHandle("a_Pos"));
+	Ecs_Python_Cmd("initGeom()");
 
 	// Do some python error checking!
 	return true;
@@ -210,7 +218,7 @@ void Draw() {
 
 	// Bind shader
 	auto sb = g_Shader.ScopeBind();
-	for (const auto& G : g_GeomCollection) {
+	for (const auto& G : GraphicsCollection::Instance()) {
 		// calculate PMV matrix and upload
 		mat4 PMV = P * G.MV;
 		glUniformMatrix4fv(g_Shader.getHandle("u_PMV"), 1, GL_FALSE, (const GLfloat *)&PMV);
