@@ -9,14 +9,14 @@
 // Useful for looking up shader variables and handles
 using HandleMap = std::map < std::string, GLint >;
 
-class Shader;
-
 class Shader {
 public:
 	Shader();
 	~Shader();
 
 	// Initializer
+	int Init_S(std::string vSrc, std::string fSrc);
+	int Init_F(std::string vFile, std::string fFile);
 	int CompileAndLink();
 
 	// For the python scripting stuff, it helps to let

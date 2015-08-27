@@ -21,9 +21,7 @@
 #include <SDL.h>
 #include <SDL_events.h>
 
-#include <pywrapper.h>
-#include <EcsPython.h>
-#define ECS_EXPOSE(Var) Ecs_Expose_Object(&Var, xstr(Var))
+#include "pyliason.h"
 
 // Screen dims
 const int WIDTH = 600;
@@ -40,8 +38,11 @@ SDL_Window * g_Window = nullptr;
 Shader g_Shader;
 
 // Factory and Collection externs
-G_Component::FactoryPtr GraphicsFactory::s_Instance;
-G_Component::CollectionPtr GraphicsCollection::s_Instance;
+template <typename T>
+typename Component<T>::F_ptr Component<T>::Factory::s_Instance;
+
+template <typename T>
+typename Component<T>::C_ptr Component<T>::Collection::s_Instance;
 
 // This doesn't need to be global, but what happens when
 // it goes out of scope? Will python know?
@@ -120,58 +121,33 @@ bool InitGL() {
 	return true;
 }
 
-// Python registration stuff, it's a work in progress
-// Expose the geometry factory and its modifier methods
-ECS_REGISTER_CLASS(GraphicsFactory)
-ECS_REGISTER_METHOD_VOID(GraphicsFactory, setTrans, float, float, float)
-ECS_REGISTER_METHOD_VOID(GraphicsFactory, setScale, float, float, float)
-ECS_REGISTER_METHOD_VOID(GraphicsFactory, setRot, float, float, float, float)
-ECS_REGISTER_METHOD_VOID(GraphicsFactory, setColor, float, float, float, float)
-
-// Expose the Geom collection and it's add method
-ECS_REGISTER_CLASS(GraphicsCollection)
-ECS_REGISTER_METHOD_VOID(GraphicsCollection, addComponent, void *)
-
-ECS_REGISTER_CLASS(Shader)
-ECS_REGISTER_METHOD_VOID(Shader, SetSource_V, std::string)
-ECS_REGISTER_METHOD_VOID(Shader, SetSourceFile_V, std::string)
-ECS_REGISTER_METHOD_VOID(Shader, SetSource_F, std::string)
-ECS_REGISTER_METHOD_VOID(Shader, SetSourceFile_F, std::string)
-ECS_REGISTER_METHOD_RETURN(Shader, CompileAndLink, int)
-
 // I can't expose constructors, I'd need
 // a factory (and fuck that)
-ECS_REGISTER_CLASS(Camera)
-ECS_REGISTER_METHOD_VOID(Camera, Init, float, float, float, float , float, float)
+
 
 // initPython
 // Sets up python interpreter (work in progress)
 bool InitPython() {
-	Ecs_Init_GraphicsFactory();
-	Ecs_Init_GraphicsFactory_setTrans();
-	Ecs_Init_GraphicsFactory_setScale();
-	Ecs_Init_GraphicsFactory_setRot();
-	Ecs_Init_GraphicsFactory_setColor();
+	Python::Register_Class<Shader>("Shader");
+	Python::Register_Class<Camera>("Camera");
 
-	Ecs_Init_GraphicsCollection();
-	Ecs_Init_GraphicsCollection_addComponent();
+	// You need a macro
+	std::function<void(Camera *, float, float, float, float, float, float)> camInitFn(&Camera::InitOrtho);
+	Python::_add_Func<__LINE__, Camera>("InitOrtho", camInitFn, METH_VARARGS,
+		"Create an Orthographic Camera");
 
-	Ecs_Init_Shader();
-	Ecs_Init_Shader_SetSource_V();
-	Ecs_Init_Shader_SetSourceFile_V();
-	Ecs_Init_Shader_SetSource_F();
-	Ecs_Init_Shader_SetSourceFile_F();
-	Ecs_Init_Shader_CompileAndLink();
+	std::function<int()> shaderC_L(&Shader::CompileAndLink);
+	Python::_add_Func<__LINE__, Shader>("CompileAndLink", shaderC_L, METH_VARARGS,
+		"Compile and Link a Shader Program");
+	std::function<int(std::string, std::string)> shader_File(&Shader::Init_F);
+	Python::_add_Func<__LINE__, Shader>("InitOrtho", shader_File, METH_VARARGS,
+		"Create a Shader Program from two source files on disk");
 
-	Ecs_Init_Camera();
-	Ecs_Init_Camera_Init();
+	Python::initialize();
 
-	Ecs_Initialize();
-
-	Ecs_Expose_Object(GraphicsFactory::Instance(), "g_GraphicsFactory");
-	ECS_EXPOSE(g_Shader);
-	ECS_EXPOSE(g_Camera);
-	Ecs_Expose_Object(&GraphicsCollection::Instance(), "g_GraphicsCollection"); // unfortunate
+	// Make these macros that turn var name ==> string
+	Python::Expose_Object(&g_Shader, "g_Shader");
+	Python::Expose_Object(&g_Camera, "g_Camera");
 
 	return true;
 }
@@ -181,21 +157,21 @@ bool InitPython() {
 // as well as camera and other stuff
 bool InitScene(){
 	// run script to generate init functions
-	Ecs_Python_File("../Scripts/init.py");
+	// In the future you can try and use pywrapper's
+	// encapsulated scripts to limit things to a scope
+	// but quick and d for now
+	Python::RunFile("../Scripts/init.py");
 
 	// Init shader
-	Ecs_Python_Cmd("initShader()");
+	Python::RunCmd("initShader()");
 
 	// Makes an ortho camera
-	Ecs_Python_Cmd("initCamera()");
-
-	GraphicsFactory::Init();
-	GraphicsCollection::Init();
+	Python::RunCmd("initCamera()");
 
 	// bind shader, get position handle, init geom
 	auto sBind = g_Shader.ScopeBind();
 	GraphicsFactory::setPosHandle(g_Shader.getHandle("a_Pos"));
-	Ecs_Python_Cmd("initGeom()");
+	Python::RunCmd("initGeom()");
 
 	// Do some python error checking!
 	return true;
@@ -241,7 +217,7 @@ bool TearDown() {
 	g_Window = nullptr;
 	SDL_Quit();
 
-	Ecs_Finalize();
+	Python::finalize();
 
 	return true;
 }

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(2D_Python_Renderer)
+project(PyRenderer)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -27,9 +27,9 @@ file(GLOB HEADERS include/*.h)
 file(GLOB SHADERS Shaders/*)
 file(GLOB SCRIPTS Scripts/*)
 
-include_directories(${GLM_DIR} ${GL_INC} ${SDL2_INC}  ${PYTHON_INCLUDE_DIRS} $ENV{SDK}/pywrapper/include include)
+include_directories(${GLM_DIR} ${GL_INC} ${SDL2_INC}  ${PYTHON_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../PyLiaison/include include)
 
-add_subdirectory($ENV{SDK}/pywrapper ${CMAKE_CURRENT_BINARY_DIR}/pywrapper)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../PyLiaison ${CMAKE_CURRENT_BINARY_DIR}/PyLiaison)
 
-add_executable(2D_Python_Renderer ${SOURCES} ${HEADERS} ${SHADERS} ${SCRIPTS})
-target_link_libraries(2D_Python_Renderer LINK_PUBLIC ${SDL2_LIBS} ${GL_LIBS} ${PYTHON_LIBRARIES} pywrapper)
+add_executable(PyRenderer ${SOURCES} ${HEADERS} ${SHADERS} ${SCRIPTS})
+target_link_libraries(LINK_PUBLIC PyRenderer ${SDL2_LIBS} ${GL_LIBS} ${PYTHON_LIBRARIES} PyLiaison)

@@ -14,6 +14,9 @@ g_GraphicsCollection = None
 g_CollisionFactory = None
 g_CollisionCollection = None
 
+g_Shader = None
+g_Camera = None
+
 g_Entities = []
 
 #for now everything is quads
