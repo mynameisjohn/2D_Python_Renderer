@@ -4,6 +4,8 @@
 
 #include <array>
 
+#include <pyliason.h>
+
 GLint G_Data::s_PosHandle(-1);
 
 /*static*/ void G_Data::SetPosHandle(GLint pH) {
@@ -35,6 +37,36 @@ void GraphicsFactory::setRot(float w, float x, float y, float z) {
 
 void GraphicsFactory::setColor(float r, float g, float b, float a /*= 1.f*/) {
 	m_Color = vec4(r, g, b, a);
+}
+
+/*static*/ void GraphicsFactory::PyRegister(){
+	Python::Register_Class<GraphicsFactory>("GraphicsFactory");
+
+	// All this shit
+	std::function<void(GraphicsFactory*, float, float, float)> gf_setTrans(&GraphicsFactory::setTrans);
+	Python::_add_Func<__LINE__, GraphicsFactory>("SetTrans", gf_setTrans, METH_VARARGS,
+		"Set factory's translation state");
+
+	std::function<void(GraphicsFactory*, float, float, float)> gf_setScale(&GraphicsFactory::setTrans);
+	Python::_add_Func<__LINE__, GraphicsFactory>("SetScale", gf_setScale, METH_VARARGS,
+		"Set factory's scale state");
+
+	std::function<void(GraphicsFactory*, float, float, float, float)> gf_setRot(&GraphicsFactory::setRot);
+	Python::_add_Func<__LINE__, GraphicsFactory>("SetRot", gf_setRot, METH_VARARGS,
+		"Set factory's rotation state");
+
+	std::function<void(GraphicsFactory*, float, float, float, float)> gf_setColor(&GraphicsFactory::setColor);
+	Python::_add_Func<__LINE__, GraphicsFactory>("SetColor", gf_setColor, METH_VARARGS,
+		"Set factory's color state");
+
+}
+
+/*static*/ void GraphicsCollection::PyRegister() {
+	Python::Register_Class<GraphicsCollection>("GraphicsCollection");
+
+	std::function<G_Data *(GraphicsCollection *, GraphicsFactory *)> gc_Add(&GraphicsCollection::addComponent);
+	Python::_add_Func<__LINE__, GraphicsCollection>("AddComponent", gc_Add, METH_VARARGS,
+		"add graphics component to collection");
 }
 
 G_Data QuadFactory::GetData() {

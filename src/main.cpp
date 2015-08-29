@@ -115,49 +115,15 @@ bool InitGL() {
 // initPython
 // Sets up python interpreter (work in progress)
 bool InitPython() {
-	Python::Register_Class<Shader>("Shader");
-	Python::Register_Class<Camera>("Camera");
-	Python::Register_Class<GraphicsFactory>("GraphicsFactory");
-	Python::Register_Class<GraphicsCollection>("GraphicsCollection");
-	Python::Register_Class<G_Data>("G_Comp"); // I'm just doing this for the constructor
+	// It's unfortunate that static functions can't be
+	// virtual, but I guess it's not a big deal
+	Shader::PyRegister();
+	Camera::PyRegister();
+	GraphicsFactory::PyRegister();
+	GraphicsCollection::PyRegister();
 
-	// You need a macro
-	std::function<void(Camera *, float, float, float, float, float, float)> camInitFn(&Camera::InitOrtho);
-	Python::_add_Func<__LINE__, Camera>("InitOrtho", camInitFn, METH_VARARGS,
-		"Create an Orthographic Camera");
-
-	std::function<int(Shader *)> shaderC_L(&Shader::CompileAndLink);
-	Python::_add_Func<__LINE__, Shader>("CompileAndLink", shaderC_L, METH_VARARGS,
-		"Compile and Link a Shader Program");
-
-	std::function<int(Shader *, std::string)> shader_vSrc(&Shader::SetSourceFile_V);
-	Python::_add_Func<__LINE__, Shader>("InitOrtho", shader_vSrc, METH_VARARGS,
-		"Set vshader src");
-
-	std::function<int(Shader *, std::string)> shader_fSrc(&Shader::SetSourceFile_V);
-	Python::_add_Func<__LINE__, Shader>("InitOrtho", shader_fSrc, METH_VARARGS,
-		"set fshader src");
-
-	// All this shit
-	std::function<void(GraphicsFactory*, float, float, float)> gf_setTrans(&GraphicsFactory::setTrans);
-	Python::_add_Func<__LINE__, GraphicsFactory>("SetTrans", gf_setTrans, METH_VARARGS,
-		"Set factory's translation state");
-
-	std::function<void(GraphicsFactory*, float, float, float)> gf_setScale(&GraphicsFactory::setTrans);
-	Python::_add_Func<__LINE__, GraphicsFactory>("SetScale", gf_setScale, METH_VARARGS,
-		"Set factory's scale state");
-
-	std::function<void(GraphicsFactory*, float, float, float, float)> gf_setRot(&GraphicsFactory::setRot);
-	Python::_add_Func<__LINE__, GraphicsFactory>("SetRot", gf_setRot, METH_VARARGS,
-		"Set factory's rotation state");
-
-	std::function<void(GraphicsFactory*, float, float, float, float)> gf_setColor(&GraphicsFactory::setColor);
-	Python::_add_Func<__LINE__, GraphicsFactory>("SetColor", gf_setColor, METH_VARARGS,
-		"Set factory's color state");
-	
-	std::function<G_Data *(GraphicsCollection *, GraphicsFactory *)> gc_Add(&GraphicsCollection::addComponent);
-	Python::_add_Func<__LINE__, GraphicsCollection>("AddComponent", gc_Add, METH_VARARGS,
-		"add graphics component to collection");
+	// I'm just doing this for the constructor
+	Python::Register_Class<G_Data>("G_Comp"); 
 
 	Python::initialize();
 

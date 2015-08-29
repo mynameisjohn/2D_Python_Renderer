@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include <gtx/transform.hpp>
+#include <pyliason.h>
 
 GLint Camera::s_ProjHandle(-1);
 GLint Camera::s_PosHandle(-1);
@@ -103,4 +104,12 @@ mat4 Camera::GetProj() const {
 
 /*static*/ void Camera::SetProjHandle(GLint p) {
 	s_ProjHandle = p;
+}
+
+/*static*/ void Camera::PyRegister() {
+	Python::Register_Class<Camera>("Camera");
+
+	std::function<void(Camera *, float, float, float, float, float, float)> camInitFn(&Camera::InitOrtho);
+	Python::_add_Func<__LINE__, Camera>("InitOrtho", camInitFn, METH_VARARGS,
+		"Create an Orthographic Camera");
 }

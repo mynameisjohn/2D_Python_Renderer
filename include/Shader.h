@@ -19,6 +19,9 @@ public:
 	// Initializer
 	int CompileAndLink();
 
+	// Python class registration
+	static void PyRegister();
+
 	// For the python scripting stuff, it helps to let
 	// other people change the source. However this has
 	// to blow out any previous shader info, so be careful

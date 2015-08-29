@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include <pyliason.h>
+
 using namespace std;
 
 // Basics
@@ -178,4 +180,20 @@ void Shader::SetSourceFile_V(std::string file) {
 void Shader::SetSourceFile_F(std::string file) {
 	ifstream in(file);
 	SetSource_F(std::string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>()));
+}
+
+/*static*/ void Shader::PyRegister() {
+	Python::Register_Class<Shader>("Shader");
+
+	std::function<int(Shader *)> shaderC_L(&Shader::CompileAndLink);
+	Python::_add_Func<__LINE__, Shader>("CompileAndLink", shaderC_L, METH_VARARGS,
+		"Compile and Link a Shader Program");
+
+	std::function<int(Shader *, std::string)> shader_vSrc(&Shader::SetSourceFile_V);
+	Python::_add_Func<__LINE__, Shader>("InitOrtho", shader_vSrc, METH_VARARGS,
+		"Set vshader src");
+
+	std::function<int(Shader *, std::string)> shader_fSrc(&Shader::SetSourceFile_V);
+	Python::_add_Func<__LINE__, Shader>("InitOrtho", shader_fSrc, METH_VARARGS,
+		"set fshader src");
 }

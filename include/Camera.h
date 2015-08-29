@@ -52,6 +52,9 @@ public:
 
 	static void SetProjHandle(GLint p);
 	static void SetPosHandle(GLint C);
+
+	// Python class registration
+	static void PyRegister();
 private:
 	// Camera Type, position, rotation, projection
 	Type m_Type;

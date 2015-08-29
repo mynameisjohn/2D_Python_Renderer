@@ -43,6 +43,9 @@ public:
 	void setColor(float, float, float, float a = 1.f);
 
 	virtual G_Data GetData() = 0;
+
+	// Python class registration
+	static void PyRegister();
 };
 
 class GraphicsCollection : public Collection<G_Data>
@@ -57,6 +60,9 @@ public:
 		v_Components.push_back(f->GetData());
 		return &v_Components.back();
 	}
+
+	// Python class registration
+	static void PyRegister();
 };
 
 class QuadFactory : public GraphicsFactory
