@@ -35,6 +35,12 @@ void GraphicsFactory::setColor(float r, float g, float b, float a /*= 1.f*/) {
 	m_Color = vec4(r, g, b, a);
 }
 
+// I should use an enum or something, 
+// but there's only one subclass for now...
+/*static*/ void GraphicsFactory::Init() {
+	s_Instance = F_ptr(new QuadFactory());
+}
+
 G_Data QuadFactory::GetData() {
 	// This is a cheap trick....
 	// I need the index count, but I'd rather

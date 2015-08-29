@@ -10,16 +10,20 @@
 template <typename D>
 class Factory
 {
+public:
 	using F_ptr = std::unique_ptr< Factory<D> >;
 protected:
 	static F_ptr s_Instance;
 public:
-	static Factory * Instance() { return s_Instance.get(); }
+	static Factory& Instance() { return *(s_Instance.get()); }
 };
+template<typename D>
+Factory<D>::F_ptr Factory<D>::s_Instance(nullptr);
 
 template <typename D>
 class Collection
 {
+public:
 	using C_ptr = std::unique_ptr< Collection<D> >;
 
 protected:
@@ -32,6 +36,9 @@ public:
 	auto begin() -> decltype(s_Instance->v_Components.begin()) { return s_Instance->v_Components.begin(); }
 	auto end() -> decltype(s_Instance->v_Components.end()) { return s_Instance->v_Components.end(); }
 };
+template<typename D>
+Collection<D>::C_ptr Collection<D>::s_Instance(nullptr);
+
 //
 //// Generic Component Class
 //// The parameter C is the "data" model, and any subclasses

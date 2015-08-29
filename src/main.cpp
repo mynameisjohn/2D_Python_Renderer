@@ -170,7 +170,7 @@ bool InitScene(){
 
 	// bind shader, get position handle, init geom
 	auto sBind = g_Shader.ScopeBind();
-	GraphicsFactory::setPosHandle(g_Shader.getHandle("a_Pos"));
+	G_Data::SetPosHandle(g_Shader.getHandle("a_Pos"));
 	Python::RunCmd("initGeom()");
 
 	// Do some python error checking!

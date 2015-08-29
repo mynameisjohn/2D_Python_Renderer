@@ -4,6 +4,9 @@ project(PyRenderer)
 
 set(CMAKE_CXX_STANDARD 11)
 
+set(PYTHON_LIBRARY C:/Python34/libs/python34_d.lib)
+set(PYTHON_INCLUDE_DIR C:/Python34/include)
+
 find_package(SDL2)
 find_package(OpenGL)
 find_package(GLEW)
@@ -27,9 +30,9 @@ file(GLOB HEADERS include/*.h)
 file(GLOB SHADERS Shaders/*)
 file(GLOB SCRIPTS Scripts/*)
 
-include_directories(${GLM_DIR} ${GL_INC} ${SDL2_INC}  ${PYTHON_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../PyLiaison/include include)
+include_directories(${GLM_DIR} ${GL_INC} ${SDL2_INC}  ${PYTHON_INCLUDE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../PyLiaison/include include)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../PyLiaison ${CMAKE_CURRENT_BINARY_DIR}/PyLiaison)
 
 add_executable(PyRenderer ${SOURCES} ${HEADERS} ${SHADERS} ${SCRIPTS})
-target_link_libraries(LINK_PUBLIC PyRenderer ${SDL2_LIBS} ${GL_LIBS} ${PYTHON_LIBRARIES} PyLiaison)
+target_link_libraries(PyRenderer ${SDL2_LIBS} ${GL_LIBS} ${PYTHON_LIBRARY} PyLiaison)

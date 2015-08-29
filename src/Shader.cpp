@@ -179,19 +179,3 @@ void Shader::SetSourceFile_F(std::string file) {
 	ifstream in(file);
 	SetSource_F(std::string((istreambuf_iterator<char>(in)), istreambuf_iterator<char>()));
 }
-
-ECS_REGISTER_CLASS(Shader)
-ECS_REGISTER_METHOD_VOID(Shader, SetSource_V, std::string)
-ECS_REGISTER_METHOD_VOID(Shader, SetSourceFile_V, std::string)
-ECS_REGISTER_METHOD_VOID(Shader, SetSource_F, std::string)
-ECS_REGISTER_METHOD_VOID(Shader, SetSourceFile_F, std::string)
-ECS_REGISTER_METHOD_RETURN(Shader, CompileAndLink, int)
-/*static*/ void Shader::PyInit()
-{
-	Ecs_Init_Shader();
-	Ecs_Init_Shader_SetSource_V();
-	Ecs_Init_Shader_SetSourceFile_V();
-	Ecs_Init_Shader_SetSource_F();
-	Ecs_Init_Shader_SetSourceFile_F();
-	Ecs_Init_Shader_CompileAndLink();
-}

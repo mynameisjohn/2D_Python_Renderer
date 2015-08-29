@@ -18,7 +18,7 @@ struct G_Data
 	mat4 MV;
 
 	static GLint GetPosHandle();
-protected:
+//protected:
 	static void SetPosHandle(GLint);
 private:
 	static GLint s_PosHandle;
@@ -34,8 +34,6 @@ protected:
 
 	// Used for caching, may have to move to subclasses
 	std::map<std::string, GLuint> m_CachedVAOs;
-
-	GraphicsFactory();
 public:
 
 	void setTrans(float, float, float);
@@ -44,20 +42,23 @@ public:
 	void setColor(float, float, float, float a = 1.f);
 
 	virtual G_Data GetData() = 0;
+
+	static void Init();
 };
 
-class GraphicsCollection : Collection<G_Data>
+class GraphicsCollection : public Collection<G_Data>
 {
-protected:
 	GraphicsCollection() {}
 public:
-	virtual G_Data * AddComponent(GraphicsFactory * f) {
+	virtual G_Data * addComponent(GraphicsFactory * f) {
 		v_Components.push_back(f->GetData());
 	}
+	static void Init(GraphicsCollection * f);
 };
 
 class QuadFactory : public GraphicsFactory
 {
+protected:
 	QuadFactory() : GraphicsFactory() {}
 public:
 	G_Data GetData() override;
