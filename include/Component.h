@@ -30,8 +30,8 @@ protected:
 	std::vector<D> v_Components;
 
 public:
-	auto begin() -> decltype(s_Instance->v_Components.begin()) { return s_Instance->v_Components.begin(); }
-	auto end() -> decltype(s_Instance->v_Components.end()) { return s_Instance->v_Components.end(); }
+	auto begin() -> decltype(v_Components.begin()) { return v_Components.begin(); }
+	auto end() -> decltype(v_Components.end()) { return v_Components.end(); }
 };
 
 #endif

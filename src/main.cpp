@@ -12,6 +12,7 @@
 #include "Util.h"
 #include "Shader.h"
 #include "GraphicsComponent.h"
+#include "CollisionComponent.h"
 #include "Camera.h"
 
 #include <gtx/transform.hpp>
@@ -37,8 +38,11 @@ Shader g_Shader;
 
 // Down the road these might be singletons,
 // but for right now I just want some results
-GraphicsFactory::u_ptr g_GraphicsFactory;
-GraphicsCollection::u_ptr g_GraphicsCollection;
+GraphicsFactory::u_ptr g_GraphicsFactory(nullptr);
+GraphicsCollection::u_ptr g_GraphicsCollection(nullptr);
+
+C_Factory::u_ptr g_CollisionFactory(nullptr);
+C_Collection::u_ptr g_CollisionCollection(nullptr);
 
 // Global Camera (you should move this somewhere)
 Camera g_Camera;
@@ -108,6 +112,9 @@ bool InitGL() {
 
 	g_GraphicsFactory = GraphicsFactory::u_ptr(new QuadFactory());
 	g_GraphicsCollection = GraphicsCollection::u_ptr(new GraphicsCollection());
+
+	g_CollisionFactory = C_Factory::u_ptr(new C_Factory());
+	g_CollisionCollection = C_Collection::u_ptr(new C_Collection());
 
 	return true;
 }

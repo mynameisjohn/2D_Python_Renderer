@@ -58,7 +58,6 @@ void GraphicsFactory::setColor(float r, float g, float b, float a /*= 1.f*/) {
 	std::function<void(GraphicsFactory*, float, float, float, float)> gf_setColor(&GraphicsFactory::setColor);
 	Python::_add_Func<__LINE__, GraphicsFactory>("SetColor", gf_setColor, METH_VARARGS,
 		"Set factory's color state");
-
 }
 
 /*static*/ void GraphicsCollection::PyRegister() {
