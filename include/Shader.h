@@ -22,8 +22,8 @@ public:
 	// For the python scripting stuff, it helps to let
 	// other people change the source. However this has
 	// to blow out any previous shader info, so be careful
-	void SetSource_V(std::string source); // TODO should these
-	void SetSourceFile_V(std::string fileName); // compile/link?
+	void SetSource_V(std::string source); 
+	void SetSourceFile_V(std::string fileName); 
 	void SetSource_F(std::string source); 
 	void SetSourceFile_F(std::string fileName); 
 

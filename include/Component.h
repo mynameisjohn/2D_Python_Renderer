@@ -5,6 +5,10 @@
 #include <vector>
 
 // These classes are completely useless
+// Basically the idea is that every component
+// will need a factory and a collection. The rest
+// is pretty open, but these two classes do
+// suprisingly little
 
 // Factory singleton
 template <typename D>
@@ -12,14 +16,14 @@ class Factory
 {
 public:
 	Factory() {}
-	using F_ptr = std::unique_ptr< Factory<D> >;
+	using u_ptr = std::unique_ptr< Factory<D> >;
 };
 
 template <typename D>
 class Collection
 {
 public:
-	using C_ptr = std::unique_ptr< Collection<D> >;
+	using u_ptr = std::unique_ptr< Collection<D> >;
 
 protected:
 	Collection() {}

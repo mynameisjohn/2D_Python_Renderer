@@ -1,10 +1,4 @@
-﻿#class Component:
-#    def __init__(self, ecsptr):
-#        self._self = ecsptr
-#    def __call__(self):
-#        return self._self
-
-class Entity:
+﻿class Entity:
     def __init__(self):
         self.components = {}
 
@@ -18,12 +12,6 @@ def addEntity(pos, color, scale):
     g_GraphicsFactory.setColor(color[0], color[1], color[2], color[3])
     gComp_cptr = g_GraphicsCollection.AddComponent(g_GraphicsFactory())
     print(gComp_cptr)
-    #gComp = Component(g_GraphicsCollection.addComponent(g_GraphicsFactory))
-
-    #prior to this call, give collision factory pos and scale
-    #g_CollisionFactory.setTrans(pos[0], pos[1], pos[2])
-    #g_CollisionFactory.setScale(scale[0], scale[1], scale[2])
-    #cComp = Component(g_CollisionFactory.addComponent(g_CollisionFactory))
 
     e = Entity()
     e.components["Graphics"] = G_Comp(gComp_cptr)

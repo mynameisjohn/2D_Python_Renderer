@@ -35,8 +35,10 @@ SDL_Window * g_Window = nullptr;
 // Pointer to the shader struct (does it need to be a pointer?)
 Shader g_Shader;
 
-GraphicsFactory::F_ptr g_GraphicsFactory;
-GraphicsCollection::C_ptr g_GraphicsCollection;
+// Down the road these might be singletons,
+// but for right now I just want some results
+GraphicsFactory::u_ptr g_GraphicsFactory;
+GraphicsCollection::u_ptr g_GraphicsCollection;
 
 // Global Camera (you should move this somewhere)
 Camera g_Camera;
@@ -104,8 +106,8 @@ bool InitGL() {
 	//For debugging
 	glLineWidth(8.f);
 
-	g_GraphicsFactory = GraphicsFactory::F_ptr(new QuadFactory());
-	g_GraphicsCollection = GraphicsCollection::C_ptr(new GraphicsCollection());
+	g_GraphicsFactory = GraphicsFactory::u_ptr(new QuadFactory());
+	g_GraphicsCollection = GraphicsCollection::u_ptr(new GraphicsCollection());
 
 	return true;
 }

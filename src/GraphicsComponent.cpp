@@ -38,10 +38,6 @@ void GraphicsFactory::setColor(float r, float g, float b, float a /*= 1.f*/) {
 }
 
 G_Data QuadFactory::GetData() {
-	// This is a cheap trick....
-	// I need the index count, but I'd rather
-	// figure something else out
-	// Vertices, centered around origin
 	const std::array<vec3, 4> vertices = {
 		vec3(-1,-1,0),
 		vec3(1,-1,0),
