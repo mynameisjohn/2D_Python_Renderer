@@ -10,7 +10,7 @@ set(PYTHON_INCLUDE_DIR C:/Python34/include)
 find_package(SDL2)
 find_package(OpenGL)
 find_package(GLEW)
-find_package(PythonLibs 2.7)
+#find_package(PythonLibs 2.7)
 
 if (WIN32)
 	add_definitions(-DGLEW_STATIC)

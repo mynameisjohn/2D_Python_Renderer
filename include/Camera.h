@@ -1,12 +1,12 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "GL_Includes.h"
-#include "Util.h"
-
 #include <mat4x4.hpp>
 #include <vec3.hpp>
 #include <gtx/quaternion.hpp>
+
+#include "GL_Includes.h"
+#include "Util.h"
 
 // Transformable (pos, rot) camera class
 // Owns a projection matrix and generates a

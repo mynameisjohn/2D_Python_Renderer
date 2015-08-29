@@ -1,21 +1,12 @@
-﻿class Component:
-    def __init__(self, ecsptr):
-        self._self = ecsptr
-    def __call__(self):
-        return self._self
+﻿#class Component:
+#    def __init__(self, ecsptr):
+#        self._self = ecsptr
+#    def __call__(self):
+#        return self._self
 
 class Entity:
     def __init__(self):
         self.components = {}
-
-g_GraphicsFactory = None
-g_GraphicsCollection = None
-
-g_CollisionFactory = None
-g_CollisionCollection = None
-
-g_Shader = None
-g_Camera = None
 
 g_Entities = []
 
@@ -25,7 +16,9 @@ def addEntity(pos, color, scale):
     g_GraphicsFactory.setTrans(pos[0], pos[1], pos[2])
     g_GraphicsFactory.setScale(scale[0], scale[1], scale[2])
     g_GraphicsFactory.setColor(color[0], color[1], color[2], color[3])
-    gComp = Component(g_GraphicsCollection.addComponent(g_GraphicsFactory))
+    gComp_cptr = g_GraphicsCollection.AddComponent(g_GraphicsFactory())
+    print(gComp_cptr)
+    #gComp = Component(g_GraphicsCollection.addComponent(g_GraphicsFactory))
 
     #prior to this call, give collision factory pos and scale
     #g_CollisionFactory.setTrans(pos[0], pos[1], pos[2])
@@ -33,8 +26,7 @@ def addEntity(pos, color, scale):
     #cComp = Component(g_CollisionFactory.addComponent(g_CollisionFactory))
 
     e = Entity()
-    e.components["Graphics"] = gComp
-    #e.components["Collision"] = cComp
+    e.components["Graphics"] = G_Comp(gComp_cptr)
 
     g_Entities.append(e)
 

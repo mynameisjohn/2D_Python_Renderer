@@ -1,14 +1,14 @@
 #ifndef GRAPHICS_COMPONENT_H
 #define GRAPHICS_COMPONENT_H
 
-#include "GL_Includes.h"
-#include "Util.h"
-#include "Component.h"
-
 #include <vec3.hpp>
 #include <vec4.hpp>
 #include <mat4x4.hpp>
 #include <gtc/quaternion.hpp>
+
+#include "GL_Includes.h"
+#include "Util.h"
+#include "Component.h"
 
 struct G_Data
 {
@@ -35,6 +35,7 @@ protected:
 	// Used for caching, may have to move to subclasses
 	std::map<std::string, GLuint> m_CachedVAOs;
 public:
+	GraphicsFactory();
 
 	void setTrans(float, float, float);
 	void setScale(float, float, float);
@@ -42,25 +43,26 @@ public:
 	void setColor(float, float, float, float a = 1.f);
 
 	virtual G_Data GetData() = 0;
-
-	static void Init();
 };
 
 class GraphicsCollection : public Collection<G_Data>
 {
-	GraphicsCollection() {}
 public:
+	GraphicsCollection() {}
+
+	// Just as a heads up, you can't construct python
+	// objects with this pointer, since the vector
+	// will relocate whether you like it or not
 	virtual G_Data * addComponent(GraphicsFactory * f) {
 		v_Components.push_back(f->GetData());
+		return &v_Components.back();
 	}
-	static void Init(GraphicsCollection * f);
 };
 
 class QuadFactory : public GraphicsFactory
 {
-protected:
-	QuadFactory() : GraphicsFactory() {}
 public:
+	QuadFactory() : GraphicsFactory() {}
 	G_Data GetData() override;
 };
 

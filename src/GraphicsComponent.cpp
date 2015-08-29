@@ -5,9 +5,11 @@
 #include <array>
 
 GLint G_Data::s_PosHandle(-1);
+
 /*static*/ void G_Data::SetPosHandle(GLint pH) {
 	s_PosHandle = pH;
 }
+
 /*static*/ GLint G_Data::GetPosHandle() {
 	return s_PosHandle;
 }
@@ -33,12 +35,6 @@ void GraphicsFactory::setRot(float w, float x, float y, float z) {
 
 void GraphicsFactory::setColor(float r, float g, float b, float a /*= 1.f*/) {
 	m_Color = vec4(r, g, b, a);
-}
-
-// I should use an enum or something, 
-// but there's only one subclass for now...
-/*static*/ void GraphicsFactory::Init() {
-	s_Instance = F_ptr(new QuadFactory());
 }
 
 G_Data QuadFactory::GetData() {

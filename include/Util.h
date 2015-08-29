@@ -54,15 +54,15 @@ inline T clamp(T v, T m, T M) {
 	return std::min<T>(std::max<T>(v, m), M);
 }
 
-inline float degToRad(float d) noexcept {
+inline float degToRad(float d)  {
 	return float(d * M_PI / 180.f);
 }
 
-inline float radToDeg(float r) noexcept {
+inline float radToDeg(float r)  {
 	return float(r * 180.f / M_PI);
 }
 
-inline uint32_t wrapIdx(int dim, int idx) noexcept {
+inline uint32_t wrapIdx(int dim, int idx)  {
 	return (dim + idx) % dim;
 }
 

@@ -1,9 +1,10 @@
 #ifndef QUATVEC_H
 #define QUATVEC_H
 
-#include "Util.h"
 #include <gtc/quaternion.hpp>
 #include <vec3.hpp>
+
+#include "Util.h"
 
 class quatvec {
 public:

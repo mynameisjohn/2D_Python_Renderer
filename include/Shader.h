@@ -1,10 +1,12 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "GL_Includes.h"
-#include "Util.h"
 
 #include <memory>
+
+
+#include "GL_Includes.h"
+#include "Util.h"
 
 // Useful for looking up shader variables and handles
 using HandleMap = std::map < std::string, GLint >;
@@ -15,8 +17,6 @@ public:
 	~Shader();
 
 	// Initializer
-	int Init_S(std::string vSrc, std::string fSrc);
-	int Init_F(std::string vFile, std::string fFile);
 	int CompileAndLink();
 
 	// For the python scripting stuff, it helps to let

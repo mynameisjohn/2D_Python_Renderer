@@ -11,8 +11,6 @@
 #include "GL_Includes.h"
 #include "Util.h"
 #include "Shader.h"
-//#include "GeomFactory.h"
-//#include "GeomCollection.h"
 #include "GraphicsComponent.h"
 #include "Camera.h"
 
@@ -37,20 +35,8 @@ SDL_Window * g_Window = nullptr;
 // Pointer to the shader struct (does it need to be a pointer?)
 Shader g_Shader;
 
-// Factory and Collection externs
-template <typename T>
-typename Component<T>::F_ptr Component<T>::Factory::s_Instance;
-
-template <typename T>
-typename Component<T>::C_ptr Component<T>::Collection::s_Instance;
-
-// This doesn't need to be global, but what happens when
-// it goes out of scope? Will python know?
-// You may need a custom deleter...
-//std::unique_ptr<GeomFactory> g_GeomFactory(new QuadFactory());
-//
-//// Global geometry collection
-//GeomCollection g_GeomCollection;
+GraphicsFactory::F_ptr g_GraphicsFactory;
+GraphicsCollection::C_ptr g_GraphicsCollection;
 
 // Global Camera (you should move this somewhere)
 Camera g_Camera;
@@ -118,36 +104,67 @@ bool InitGL() {
 	//For debugging
 	glLineWidth(8.f);
 
+	g_GraphicsFactory = GraphicsFactory::F_ptr(new QuadFactory());
+	g_GraphicsCollection = GraphicsCollection::C_ptr(new GraphicsCollection());
+
 	return true;
 }
-
-// I can't expose constructors, I'd need
-// a factory (and fuck that)
-
 
 // initPython
 // Sets up python interpreter (work in progress)
 bool InitPython() {
 	Python::Register_Class<Shader>("Shader");
 	Python::Register_Class<Camera>("Camera");
+	Python::Register_Class<GraphicsFactory>("GraphicsFactory");
+	Python::Register_Class<GraphicsCollection>("GraphicsCollection");
+	Python::Register_Class<G_Data>("G_Comp"); // I'm just doing this for the constructor
 
 	// You need a macro
 	std::function<void(Camera *, float, float, float, float, float, float)> camInitFn(&Camera::InitOrtho);
 	Python::_add_Func<__LINE__, Camera>("InitOrtho", camInitFn, METH_VARARGS,
 		"Create an Orthographic Camera");
 
-	std::function<int()> shaderC_L(&Shader::CompileAndLink);
+	std::function<int(Shader *)> shaderC_L(&Shader::CompileAndLink);
 	Python::_add_Func<__LINE__, Shader>("CompileAndLink", shaderC_L, METH_VARARGS,
 		"Compile and Link a Shader Program");
-	std::function<int(std::string, std::string)> shader_File(&Shader::Init_F);
-	Python::_add_Func<__LINE__, Shader>("InitOrtho", shader_File, METH_VARARGS,
-		"Create a Shader Program from two source files on disk");
+
+	std::function<int(Shader *, std::string)> shader_vSrc(&Shader::SetSourceFile_V);
+	Python::_add_Func<__LINE__, Shader>("InitOrtho", shader_vSrc, METH_VARARGS,
+		"Set vshader src");
+
+	std::function<int(Shader *, std::string)> shader_fSrc(&Shader::SetSourceFile_V);
+	Python::_add_Func<__LINE__, Shader>("InitOrtho", shader_fSrc, METH_VARARGS,
+		"set fshader src");
+
+	// All this shit
+	std::function<void(GraphicsFactory*, float, float, float)> gf_setTrans(&GraphicsFactory::setTrans);
+	Python::_add_Func<__LINE__, GraphicsFactory>("SetTrans", gf_setTrans, METH_VARARGS,
+		"Set factory's translation state");
+
+	std::function<void(GraphicsFactory*, float, float, float)> gf_setScale(&GraphicsFactory::setTrans);
+	Python::_add_Func<__LINE__, GraphicsFactory>("SetScale", gf_setScale, METH_VARARGS,
+		"Set factory's scale state");
+
+	std::function<void(GraphicsFactory*, float, float, float, float)> gf_setRot(&GraphicsFactory::setRot);
+	Python::_add_Func<__LINE__, GraphicsFactory>("SetRot", gf_setRot, METH_VARARGS,
+		"Set factory's rotation state");
+
+	std::function<void(GraphicsFactory*, float, float, float, float)> gf_setColor(&GraphicsFactory::setColor);
+	Python::_add_Func<__LINE__, GraphicsFactory>("SetColor", gf_setColor, METH_VARARGS,
+		"Set factory's color state");
+	
+	std::function<G_Data *(GraphicsCollection *, GraphicsFactory *)> gc_Add(&GraphicsCollection::addComponent);
+	Python::_add_Func<__LINE__, GraphicsCollection>("AddComponent", gc_Add, METH_VARARGS,
+		"add graphics component to collection");
 
 	Python::initialize();
 
 	// Make these macros that turn var name ==> string
 	Python::Expose_Object(&g_Shader, "g_Shader");
 	Python::Expose_Object(&g_Camera, "g_Camera");
+
+	Python::Expose_Object(g_GraphicsFactory.get(), "g_GraphicsFactory");
+	Python::Expose_Object(g_GraphicsCollection.get(), "g_GraphicsCollection");
 
 	return true;
 }
@@ -194,7 +211,7 @@ void Draw() {
 
 	// Bind shader
 	auto sb = g_Shader.ScopeBind();
-	for (const auto& G : GraphicsCollection::Instance()) {
+	for (const auto& G : *g_GraphicsCollection) {
 		// calculate PMV matrix and upload
 		mat4 PMV = P * G.MV;
 		glUniformMatrix4fv(g_Shader.getHandle("u_PMV"), 1, GL_FALSE, (const GLfloat *)&PMV);
