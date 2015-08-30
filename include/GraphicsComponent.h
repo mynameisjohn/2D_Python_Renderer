@@ -16,6 +16,11 @@ struct G_Data
 	GLuint nIdx;
 	vec4 color;
 	mat4 MV;
+	
+	void translate(vec3 T);
+	void rotate(fquat Q);
+	void scale(vec3 S);
+	void identity();
 
 	static GLint GetPosHandle();
 //protected:

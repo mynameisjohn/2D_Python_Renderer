@@ -16,6 +16,22 @@ GLint G_Data::s_PosHandle(-1);
 	return s_PosHandle;
 }
 
+void G_Data::translate(vec3 T) {
+	MV = glm::translate(T)*MV;
+}
+
+void G_Data::rotate(fquat Q) {
+	MV = glm::mat4_cast(Q) * MV;
+}
+
+void G_Data::scale(vec3 S) {
+	MV = glm::scale(S)*MV;
+}
+
+void G_Data::identity() {
+	MV = mat4(1);
+}
+
 GraphicsFactory::GraphicsFactory():
 	m_Trans(0),
 	m_Scale(1),
