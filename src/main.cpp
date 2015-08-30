@@ -41,8 +41,8 @@ Shader g_Shader;
 GraphicsFactory::u_ptr g_GraphicsFactory(nullptr);
 GraphicsCollection::u_ptr g_GraphicsCollection(nullptr);
 
-C_Factory::u_ptr g_CollisionFactory(nullptr);
-C_Collection::u_ptr g_CollisionCollection(nullptr);
+CollisionFactory::u_ptr g_CollisionFactory(nullptr);
+CollisionCollection::u_ptr g_CollisionCollection(nullptr);
 
 // Global Camera (you should move this somewhere)
 Camera g_Camera;
@@ -113,8 +113,8 @@ bool InitGL() {
 	g_GraphicsFactory = GraphicsFactory::u_ptr(new QuadFactory());
 	g_GraphicsCollection = GraphicsCollection::u_ptr(new GraphicsCollection());
 
-	g_CollisionFactory = C_Factory::u_ptr(new C_Factory());
-	g_CollisionCollection = C_Collection::u_ptr(new C_Collection());
+	g_CollisionFactory = CollisionFactory::u_ptr(new CollisionFactory());
+	g_CollisionCollection = CollisionCollection::u_ptr(new CollisionCollection());
 
 	return true;
 }

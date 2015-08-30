@@ -5,12 +5,12 @@
 #include "AABB.h"
 #include <vec2.hpp>
 
-class C_Factory : public Factory<AABB>
+class CollisionFactory : public Factory<AABB>
 {
 	AABB m_Box;
 
 public:
-	C_Factory() {}
+	CollisionFactory() {}
 	// Easiest way from python gfx setup
 	// Assumes coming from a unit square
 	void setPos(float px, float py);
@@ -23,14 +23,14 @@ public:
 	static void PyRegister();
 };
 
-class C_Collection : public Collection<AABB>
+class CollisionCollection : public Collection<AABB>
 {
 public:
-	C_Collection() {}
+	CollisionCollection() {}
 	// Just as a heads up, you can't construct python
 	// objects with this pointer, since the vector
 	// will relocate whether you like it or not
-	virtual AABB * addComponent(C_Factory * f) {
+	virtual AABB * addComponent(CollisionFactory * f) {
 		if (!f) return nullptr;
 		v_Components.push_back(f->GetData());
 		return &v_Components.back();
