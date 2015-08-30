@@ -4,6 +4,22 @@
 
 #include <pyliason.h>
 
+void C_Factory::setPos(float px, float py) {
+	m_Box.C = vec2(px, py);
+}
+void C_Factory::setScale(float sx, float sy) {
+	m_Box.R = vec2(sx, sy) / 2.f;
+}
+void C_Factory::setVel(float vx, float vy) {
+	m_Box.V = vec2(vx, vy);
+}
+void C_Factory::setMass(float m) {
+	m_Box.M = m;
+}
+AABB C_Factory::GetData() {
+	return m_Box;
+}
+
 /*static*/ void C_Factory::PyRegister() {
 	Python::Register_Class<C_Factory>("CollisionFactory");
 

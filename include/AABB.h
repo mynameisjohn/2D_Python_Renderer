@@ -10,6 +10,9 @@ struct AABB {
 	vec2 C; // Center point of box
 	vec2 R; // half widths along x, y
 	vec2 V; // velocity
+
+	// TODO consider moving mass, elasticity
+	// and collide to base collision primitive
 	float M;// mass
 	float E;// elasticity
 
@@ -26,7 +29,6 @@ struct AABB {
 	void translate(vec2 d);
 	vec2 momentum();
 	float kinetic();
-	// unsure about this
 	bool collide(AABB& other);
 	// TODO rotate func, Ericson 86
 };

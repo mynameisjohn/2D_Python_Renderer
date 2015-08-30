@@ -57,6 +57,7 @@ public:
 	// objects with this pointer, since the vector
 	// will relocate whether you like it or not
 	virtual G_Data * addComponent(GraphicsFactory * f) {
+		if (!f) return nullptr;
 		v_Components.push_back(f->GetData());
 		return &v_Components.back();
 	}
