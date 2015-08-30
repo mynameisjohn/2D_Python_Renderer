@@ -3,39 +3,6 @@
 #include "Component.h"
 #include "Util.h"
 #include <vec2.hpp>
-#include <glm.hpp>
-// we're starting simple,
-// so this is just an AABB
-struct AABB {
-	vec2 C; // Center point of box
-	vec2 R; // half widths along x, y
-	float width() { return 2.f*R.x; }
-	float height() { return 2.f*R.y; }
-	float left() { return C.x - R.x; }
-	float right() { return C.x + R.x; }
-	float top() { return C.y + R.y; }
-	float bottom() { return C.y - R.y; }
-	float dX(AABB& other) {
-		return fabs(other.C.x - C.x);
-	}
-	float dY(AABB& other) {
-		return fabs(other.C.y - C.y);
-	}
-	float dist(AABB& other) {
-		return glm::length(other.C - C);
-	}
-	bool overlaps(AABB& other) {
-		if (dX(other) > other.R.x + R.x)
-			return false;
-		if (dY(other) > other.R.y + R.y)
-			return false;
-		return true;
-	}
-	void translate(vec2 d) {
-		C += d;
-	}
-	// TODO rotate func, Ericson 86
-};
 
 class C_Factory : public Factory<AABB>
 {
@@ -43,12 +10,21 @@ class C_Factory : public Factory<AABB>
 
 public:
 	C_Factory() :
-		m_Box({ {0,0},{0,0} })
+		m_Box({ {0,0},{0,0}, {0,0} , 0 })
 	{}
 	// Easiest way from python gfx setup
 	// Assumes coming from a unit square
-	void setState(float px, float py, float sx, float sy) {
-		m_Box = { {px,py}, {sx / 2.f, sy / 2.f} };
+	void setPos(float px, float py) {
+		m_Box.C = vec2(px, py);
+	}
+	void setScale(float sx, float sy) {
+		m_Box.R = vec2(sx, sy) / 2.f;
+	}
+	void setVel(float vx, float vy) {
+		m_Box.V = vec2(vx, vy);
+	}
+	void setMass(float m) {
+		m_Box.M = m;
 	}
 	virtual AABB GetData() {
 		return m_Box;

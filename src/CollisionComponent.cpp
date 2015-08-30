@@ -7,9 +7,21 @@
 /*static*/ void C_Factory::PyRegister() {
 	Python::Register_Class<C_Factory>("CollisionFactory");
 
-	std::function<void(C_Factory*, float, float, float, float)> cf_SetState(&C_Factory::setState);
-	Python::_add_Func<__LINE__, C_Factory>("SetTrans", cf_SetState, METH_VARARGS,
-		"Set collision factory's state");
+	std::function<void(C_Factory*, float, float)> cf_setPos(&C_Factory::setPos);
+	Python::_add_Func<__LINE__, C_Factory>("SetPos", cf_setPos, METH_VARARGS,
+		"Set collision factory's pos");
+
+	std::function<void(C_Factory*, float, float)> cf_SetScale(&C_Factory::setScale);
+	Python::_add_Func<__LINE__, C_Factory>("SetPos", cf_SetScale, METH_VARARGS,
+		"Set collision factory's scale");
+
+	std::function<void(C_Factory*, float, float)> cf_SetVel(&C_Factory::setVel);
+	Python::_add_Func<__LINE__, C_Factory>("SetPos", cf_SetVel, METH_VARARGS,
+		"Set collision factory's vel");
+
+	std::function<void(C_Factory*, float)> cv_SetMass(&C_Factory::setMass);
+	Python::_add_Func<__LINE__, C_Factory>("SetPos", cv_SetMass, METH_VARARGS,
+		"Set collision factory's mass");
 }
 
 /*static*/ void C_Collection::PyRegister() {
