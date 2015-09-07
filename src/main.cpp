@@ -130,7 +130,7 @@ bool InitPython() {
 	GraphicsCollection::PyRegister();
 
 	// I'm just doing this for the constructor
-	Python::Register_Class<G_Data>("G_Comp"); 
+	//Python::Register_Class<G_Data,__LINE__>("G_Comp"); 
 
 	Python::initialize();
 
@@ -138,8 +138,8 @@ bool InitPython() {
 	Python::Expose_Object(&g_Shader, "g_Shader");
 	Python::Expose_Object(&g_Camera, "g_Camera");
 
-	Python::Expose_Object(g_GraphicsFactory.get(), "g_GraphicsFactory");
-	Python::Expose_Object(g_GraphicsCollection.get(), "g_GraphicsCollection");
+	Python::Expose_Object((GraphicsFactory *)g_GraphicsFactory.get(), "g_GraphicsFactory");
+	Python::Expose_Object((GraphicsCollection *)g_GraphicsCollection.get(), "g_GraphicsCollection");
 
 	return true;
 }
@@ -156,6 +156,7 @@ bool InitScene(){
 
 	// Init shader
 	Python::RunCmd("initShader()");
+	g_Shader.CompileAndLink();
 
 	// Makes an ortho camera
 	Python::RunCmd("initCamera()");
@@ -178,8 +179,32 @@ bool Init() {
 	return InitScene();
 }
 
+// Ideally these two loops are executing asynchronously
+// but we'll see how that goes
 void Update() {
+	// Move everything
+	for (auto& box : *g_CollisionCollection.get())
+		box.advance();
 
+	// Check for collisions (kind of iterative...)
+	decltype(g_CollisionCollection->begin()) it1, it2;
+	// For every box
+	for (it1 = g_CollisionCollection->begin(); it1 != g_CollisionCollection->end(); ++it1) {
+		// For every other box
+		for (it2 = it1 + 1; it2 != g_CollisionCollection->end(); ++it2) {
+			bool isColliding = it1->collide(*it2);
+			if (isColliding) {
+				// NYI
+				// do something with python
+			}
+		}
+	}
+
+	for (auto& G : *g_GraphicsCollection.get()) {
+		// Check updates from python
+		// update MV, color, etc.
+		// TODO calculate MV here, dont' store it
+	}
 }
 
 void Draw() {
@@ -190,7 +215,7 @@ void Draw() {
 
 	// Bind shader
 	auto sb = g_Shader.ScopeBind();
-	for (const auto& G : *g_GraphicsCollection) {
+	for (const auto& G : *g_GraphicsCollection.get()) {
 		// calculate PMV matrix and upload
 		mat4 PMV = P * G.MV;
 		glUniformMatrix4fv(g_Shader.getHandle("u_PMV"), 1, GL_FALSE, (const GLfloat *)&PMV);
@@ -228,6 +253,7 @@ int main(int argc, char * argv[]) {
 			if (e.type == SDL_KEYDOWN)
 				quit = e.key.keysym.sym == SDLK_ESCAPE;
 		}
+		Update();
 		Draw();
 	}
 

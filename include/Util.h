@@ -6,7 +6,16 @@
 
 // MSVC is for chumps
 #define _USE_MATH_DEFINES
-#include <cmath>
+#include <math.h>
+
+#ifndef GLM_FORCE_RADIANS
+#define GLM_FORCE_RADIANS
+#endif
+
+// ugh
+//#ifndef M_PI
+//#define M_PI 3.14f
+//#endif
 
 // Stringify macros
 #define xstr(s) str(s)

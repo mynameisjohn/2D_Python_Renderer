@@ -26,6 +26,7 @@ struct AABB {
 	float dY(AABB& other);
 	float dist(AABB& other);
 	bool overlaps(AABB& other);
+	void advance(float dt = 0.001f);
 	void translate(vec2 d);
 	vec2 momentum();
 	float kinetic();

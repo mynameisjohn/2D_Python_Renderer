@@ -1,11 +1,11 @@
 #include "AABB.h"
 
 AABB::AABB() :
-	C(0),
-	R(0),
-	V(0),
-	M(1),
-	E(1)
+	C(0),	// center 2d
+	R(0),	// half width 2d
+	V(0),	// velocity 2d
+	M(1),	// mass 1d
+	E(1)	// elasticity 1d
 {}
 
 float AABB::width() { return 2.f*R.x; }
@@ -39,6 +39,11 @@ void AABB::translate(vec2 d) {
 	C += d;
 }
 
+// simple for now
+void AABB::advance(float dt) {
+	translate(dt*V);
+}
+
 vec2 AABB::momentum() {
 	return M*V;
 }
@@ -48,6 +53,8 @@ float AABB::kinetic() {
 }
 
 // unsure about this
+// Will it give me hard collision by default?
+// I doubt it... if not just bring circbuf back
 bool AABB::collide(AABB& other) {
 	if (overlaps(other)) {
 		float Msum_1 = 1.f / (M + other.M); // denominator

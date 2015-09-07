@@ -35,4 +35,4 @@ include_directories(${GLM_DIR} ${GL_INC} ${SDL2_INC}  ${PYTHON_INCLUDE_DIR} ${CM
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../PyLiaison ${CMAKE_CURRENT_BINARY_DIR}/PyLiaison)
 
 add_executable(PyRenderer ${SOURCES} ${HEADERS} ${SHADERS} ${SCRIPTS})
-target_link_libraries(PyRenderer ${SDL2_LIBS} ${GL_LIBS} ${PYTHON_LIBRARY} PyLiaison)
+target_link_libraries(PyRenderer ${SDL2_LIBS} ${GL_LIBS} ${PYTHON_LIBRARY} pyliason)
